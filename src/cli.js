@@ -8,18 +8,25 @@ function run(opts = {}) {
   process.env.NODE_ACT = command
   process.env.NODE_ENV = mode
   let usrConfig = {}
-  const configPath = path.resolve(cwd, opts.config || 'webun.config.js')
-  if (fs.existsSync(configPath)) {
-    usrConfig = require(configPath)
-    if (type(usrConfig).isFunction) {
-      usrConfig = usrConfig(command, mode)
+  if(opts.config){
+    const configPath = path.resolve(cwd, opts.config)
+    if (fs.existsSync(configPath)) {
+      usrConfig = require(configPath)
+    } else {
+      logger('warning', `Config Warning: The config file '${configPath}' does not exist`)
     }
-    if (!type(usrConfig).isObject) {
-      usrConfig = {}
-      logger('warning', `Config Warning: The config must be of type Object`)
+  }else{
+    const configPath = path.resolve(cwd, 'webun.config.js')
+    if (fs.existsSync(configPath)) {
+      usrConfig = require(configPath)
     }
-  } else {
-    logger('warning', `Config Warning: The config file '${configPath}' does not exist`)
+  }
+  if (type(usrConfig).isFunction) {
+    usrConfig = usrConfig(command, mode)
+  }
+  if (!type(usrConfig).isObject) {
+    usrConfig = {}
+    logger('warning', `Config Warning: The config must be of type Object`)
   }
   usrConfig = merge(usrConfig, opts)
   const commands = { serve, build }
