@@ -9,16 +9,20 @@
     "dev-server",
     "bundle"
   ],
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "YangFei <mail@yangfei.site>",
   "homepage": "https://github.com/geekip/webun",
-  "bin": "bin/index.js",
-  "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
     "dev": "rollup -c -w --environment mode:development",
     "build": "rollup -c --environment mode:production"
   },
+  "bin": "bin/index.js",
+  "main": "lib/index.js",
+  "files": [
+    "bin",
+    "lib"
+  ],
   "dependencies": {
     "@babel/core": "^7.24.0",
     "@babel/plugin-proposal-decorators": "^7.24.0",
