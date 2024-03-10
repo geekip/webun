@@ -14,7 +14,7 @@ import WebpackBar from 'webpackbar'
 import { VueLoaderPlugin } from 'vue-loader'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
-import { cwd, lib, type, merge, logger, mergeConfig, getLibModule, cacheDir } from './utils'
+import { cwd, lib, libModules, type, merge, logger, mergeConfig, cacheDir } from './utils'
 import getDefaultConfig from './config.js'
 
 export default class DefineConfig {
@@ -151,7 +151,6 @@ export default class DefineConfig {
       logger('error', `Config Error: The src path '${dirs.src}' does not exist`)
       process.exit(1)
     }
-
     let _cacheDir = cacheDir
     if (cache && cache.type === 'filesystem') {
       const { cacheLocation, cacheDirectory } = cache
@@ -267,28 +266,21 @@ export default class DefineConfig {
   }
 
   getResolve() {
-    const { resolve = {}, jsLoader = {} } = this.config
-    const config = merge({
+    const { resolve = {} } = this.config
+    return merge({
       alias: {
         '#': cwd,
         '@': this.dirs.src
       }
     }, resolve)
-
-    if (jsLoader.type === 'swc') {
-      config.alias['@swc/helpers'] = getLibModule('@swc/helpers')
-    }
-    return config
   }
 
   getResolveLoader() {
     const { resolveLoader = {} } = this.config
     const loader = {}
     if (cwd != lib) {
-      loader.modules = [
-        path.resolve(cwd, 'node_modules'),
-        path.resolve(lib, 'node_modules')
-      ]
+      const cwdModules = path.resolve(cwd, 'node_modules')
+      loader.modules = [cwdModules, libModules]
     }
     return merge(loader, resolveLoader)
   }
@@ -474,7 +466,7 @@ export default class DefineConfig {
       options.jsxFragment = pragmaFrag
     }
     return {
-      loader: getLibModule('esbuild-loader'),
+      loader: 'esbuild-loader',
       options
     }
   }
@@ -483,7 +475,7 @@ export default class DefineConfig {
     const { jsx = {}, target } = jsLoader
     const jsc = {
       parser: {
-        syntax: 'ecmascript',
+        syntax: ts ? 'typescript' : 'ecmascript',
         decorators: true
       },
       transform: {
@@ -494,9 +486,7 @@ export default class DefineConfig {
       target,
       loose: true,
     }
-    if (ts) {
-      jsc.parser.syntax = 'typescript'
-    }
+
     if (react) {
       const { pragma, pragmaFrag } = jsx
       const reactOptions = {
@@ -516,7 +506,7 @@ export default class DefineConfig {
       jsc.parser[(ts ? 't' : 'j') + 'sx'] = true
     }
     return {
-      loader: getLibModule('swc-loader'),
+      loader: 'swc-loader',
       options: {
         jsc,
         isModule: 'unknown'
@@ -534,7 +524,7 @@ export default class DefineConfig {
       presets.push(...babels.presets.react)
       plugins.push(...babels.plugins.react)
       if (this.isDev && devServer.hot) {
-        const refresh = require.resolve(getLibModule('react-refresh/babel'))
+        const refresh = require.resolve('react-refresh/babel')
         plugins.push(refresh)
       }
     }
@@ -554,7 +544,7 @@ export default class DefineConfig {
   getBabelLoaders() {
     const { cache, jsLoader = {} } = this.config
     const { jsx = {} } = jsLoader
-    const needCache = this.config.cache && !this.usrConfig.force
+    const needCache = cache && !this.usrConfig.force
     const options = {
       compact: true,
       cacheDirectory: needCache ? this.dirs.cache.babel : false,
@@ -562,7 +552,7 @@ export default class DefineConfig {
     }
     const getPlugin = (name, option) => {
       if (cwd !== lib) {
-        name = getLibModule(name)
+        name = path.resolve(libModules, name)
       }
       const plugin = [name]
       option && plugin.push(option)

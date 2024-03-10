@@ -1,4 +1,5 @@
 import path from 'path'
+import fs from 'fs'
 import { tmpdir, networkInterfaces } from 'os'
 import { createHash } from 'crypto'
 import picocolors from 'picocolors'
@@ -10,7 +11,23 @@ const lib = path.resolve(__dirname, '..')
 const isTermColor = process.platform !== 'win32' || process.env.CI || process.env.TERM === 'xterm-256color'
 const ipv4 = getNetworkIp()
 const cacheDir = getCacheDir()
-export { cwd, lib, merge, version, ipv4, cacheDir }
+const libModules = getLibModulesDir()
+export { cwd, lib, libModules, merge, version, ipv4, cacheDir }
+
+function getLibModulesDir() {
+  let dir
+  const npmMod = path.resolve(lib, 'node_modules/webpack')
+  const pnpmMod = path.resolve(lib, '../webpack')
+  if (fs.existsSync(npmMod)) {
+    dir = path.resolve(lib, 'node_modules')
+  } else if (fs.existsSync(pnpmMod)) {
+    dir = path.resolve(lib, '../')
+  } else{
+    logger('error', `Webun Error: The webun is damaged, please install it`)
+    process.exit(1)
+  }
+  return dir
+}
 
 function getCacheDir() {
   // const cacheDirectory = path.resolve(cwd,'node_modules')
@@ -29,10 +46,6 @@ function getNetworkIp() {
     })
   })
   return ipv4
-}
-
-export function getLibModule(name) {
-  return `${lib}/node_modules/${name}`
 }
 
 export function type(obj) {
