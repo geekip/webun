@@ -9,7 +9,7 @@
     "dev-server",
     "bundle"
   ],
-  "version": "1.0.5",
+  "version": "1.0.6",
   "author": "YangFei <mail@yangfei.site>",
   "homepage": "https://github.com/geekip/webun",
   "license": "MIT",

@@ -93,13 +93,14 @@ export default class DefineConfig {
   }
 
   getCache() {
-    const { cache } = this.config
+    const { cache, jsLoader = {} } = this.config
     if (!cache || this.usrConfig.force) {
       return false
     }
     if (cache.type === 'filesystem') {
       cache.cacheDirectory = this.dirs.cache.webpack
-      cache.name = this.config.mode
+      const jsLoaderType = jsLoader.type || 'babel'
+      cache.name = `${jsLoaderType}-${this.config.mode}`
     }
     return cache
   }
@@ -383,8 +384,16 @@ export default class DefineConfig {
     })
 
     // https://github.com/webpack-contrib/webpack-bundle-analyzer
-    analyzer && plugins.push(new BundleAnalyzerPlugin(analyzer))
-
+    if (analyzer) {
+      analyzer.analyzerUrl = ({ listenHost, listenPort }) => {
+        if (listenHost === '0.0.0.0' || listenHost === '127.0.0.1') {
+          listenHost = 'localhost'
+        }
+        listenPort = listenPort === 80 ? '' : `:${listenPort}`
+        return `http://${listenHost}${listenPort}`
+      }
+      plugins.push(new BundleAnalyzerPlugin(analyzer))
+    }
     return plugins
   }
 
@@ -663,12 +672,13 @@ export default class DefineConfig {
   }
   getConfig(keys) {
     return keys.split('.').reduce((acc, key) => {
-      return acc ? acc[key] : undefined
+      return acc && acc[key]
     }, this.config)
   }
   checkConfig(keys) {
+    const flag = '_no_own_property'
     return keys.split('.').reduce((acc, key) => {
-      return acc && acc.hasOwnProperty(key) ? acc[key] : false
-    }, this.usrConfig) !== false
+      return acc && acc.hasOwnProperty(key) ? acc[key] : flag
+    }, this.usrConfig) !== flag
   }
 }

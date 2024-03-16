@@ -36,9 +36,10 @@ export default function getDefaultConfig({ command, mode }) {
     analyzer: {
       analyzerHost: '0.0.0.0',
       analyzerPort: 9528,
+      openAnalyzer: false,
       __disabled__: true
     },
-    
+
     // https://segmentfault.com/a/1190000023960072?sort=newest
     autoprefixer: {
       overrideBrowserslist: [
@@ -126,7 +127,7 @@ export default function getDefaultConfig({ command, mode }) {
         // pragmaFrag: 'React.Fragment'
       }
     },
-    
+
     output: {
       clean: true,
       // https://webpack.docschina.org/configuration/output/#outputlibrary
@@ -142,7 +143,7 @@ export default function getDefaultConfig({ command, mode }) {
     },
 
     // copy:{},
-    
+
     minify: {
       drop_comments: true,
       drop_console: false,
