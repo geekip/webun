@@ -18,7 +18,7 @@ pnpm i webun -g
 webun -h
 ```
 项目结构示例
-```shell
+```
 ├──public
 ├──src
 |  ├──assets

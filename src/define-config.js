@@ -638,7 +638,7 @@ export default class DefineConfig {
     }
 
     return {
-      exclude: /node_modules/,
+      // exclude: /node_modules/,
       use: [
         styleLoader,
         cssLoader,
